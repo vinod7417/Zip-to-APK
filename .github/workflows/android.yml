@@ -1,0 +1,39 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Zip_to_APK-main.zip'
+      - '.github/workflows/android.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Extract Source
+        run: |
+          unzip -q Zip_to_APK-main.zip -d source
+          find source -name gradlew -type f
+
+      - name: Build APK
+        run: |
+          cd source/Zip_to_APK-main
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zip-to-APK
+          path: source/Zip_to_APK-main/app/build/outputs/apk/debug/*.apk
